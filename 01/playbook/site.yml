@@ -1,10 +1,26 @@
 ---
   - name: Print os facts
     hosts: all
+    gather_facts: false
+
+    pre_tasks:
+      - name: Установка Python на Ubuntu
+        raw: apt-get update && apt-get install -y python3
+        when: inventory_hostname == 'ubuntu'
+        changed_when: false
+
+      - name: Установка Python на rockylinux9
+        raw: yum install -y python3
+        when: inventory_hostname == 'rockylinux9'
+        changed_when: false    
+      
+      - name: Ручной сбор фактов
+        setup:
+
     tasks:
       - name: Print OS
         debug:
-          msg: "{{ ansible_distribution }}"
+          msg: "{{ ansible_facts['distribution'] }}"
       - name: Print fact
         debug:
           msg: "{{ some_fact }}"
