@@ -1,9 +1,21 @@
 ---
   el:
     hosts:
-      centos7:
+      rockylinux9:
         ansible_connection: docker
+        ansible_shell_executable: /bin/bash
   deb:
     hosts:
       ubuntu:
         ansible_connection: docker
+        ansible_shell_executable: /bin/bash
+  local:
+    hosts:
+      localhost:
+        ansible_connection: local
+
+  fedora:
+    hosts:
+      fedora:
+        ansible_host: localhost
+        ansible_connection: local
