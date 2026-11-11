@@ -1,0 +1,87 @@
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  gather_facts: false
+
+  handlers:
+    - name: Start clickhouse service
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+  pre_tasks:
+    - name: Установка Python на Ubuntu
+      become: true
+      ansible.builtin.raw: apt-get update && apt-get install -y python3
+      changed_when: false
+  tasks:
+    - name: Get clickhouse distrib
+      ansible.builtin.get_url:
+        url: "https://packages.clickhouse.com/deb/pool/main/c/{{ item }}/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+        dest: "/tmp/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+        mode: "0644"
+      loop: "{{ clickhouse_packages }}"
+
+    - name: Install clickhouse packages
+      become: true
+      ansible.builtin.apt:
+        deb: "/tmp/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+        state: present
+      loop:
+        - clickhouse-common-static
+        - clickhouse-client
+        - clickhouse-server
+      notify: Start clickhouse service
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 82
+      changed_when: create_db.rc == 0
+
+
+- name: Install Vector
+  hosts: vector
+  gather_facts: false
+
+  handlers:
+    - name: Start vector service
+      become: true
+      ansible.builtin.service:
+        name: vector
+        state: restarted
+
+  pre_tasks:
+    - name: Установка Python на Ubuntu
+      become: true
+      ansible.builtin.raw: apt-get update && apt-get install -y python3
+      changed_when: false
+
+  tasks:
+    - name: Get vector distrib
+      become: true
+      ansible.builtin.get_url:
+        url: "https://install.datadoghq.com/vector/{{ vector_version }}/vector_{{ vector_version }}-1_amd64.deb"
+        dest: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+        mode: "0644"
+
+    - name: Install vector packages
+      become: true
+      ansible.builtin.apt:
+        deb: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+        state: present
+      notify: Start vector service
+
+    - name: Deploy vector configuration
+      become: true
+      ansible.builtin.template:
+        src: templates/vector.yaml.j2
+        dest: /etc/vector/vector.yaml
+        mode: "0644"
+      notify: Start vector service
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
