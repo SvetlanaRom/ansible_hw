@@ -1,0 +1,7 @@
+ansible_user: "test"
+ansible_ssh_private_key_file: "~/.ssh/id_ed25519"
+
+clickhouse_host_ip: "62.84.116.172"
+clickhouse_port: 8123
+clickhouse_db: "logs"
+clickhouse_table: "demo_syslog"
