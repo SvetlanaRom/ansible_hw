@@ -1,3 +1,2 @@
 vector_version: "0.61.0"
 vector_host_ip: "51.250.74.239"
-nginx_conf: "templates/nginx_lighthouse.conf.j2"
