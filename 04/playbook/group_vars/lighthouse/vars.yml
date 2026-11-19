@@ -1,0 +1,3 @@
+lighthouse_host_ip: "84.252.128.118"
+# lighthouse_configs_dir: "templates/lighthouse/"
+# lighthouse_nginx_conf_template: "templates/nginx_lighthouse.conf.j2"

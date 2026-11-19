@@ -1,0 +1,199 @@
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  gather_facts: false
+
+  # handlers:
+  #   - name: Start clickhouse service
+  #     become: true
+  #     ansible.builtin.service:
+  #       name: clickhouse-server
+  #       state: restarted
+
+  pre_tasks:
+    - name: Install Python
+      become: true
+      ansible.builtin.raw: apt-get update && apt-get install -y python3
+      changed_when: false
+
+  roles:
+    - role: clickhouse
+      vars:
+        clickhouse_version: "{{ clickhouse_version }}"
+        clickhouse_http_port: "{{ clickhouse_port }}"
+        clickhouse_dbs_custom: "{ name: {{ clickhouse_db }} }"
+      tags:
+        - install
+        - configure
+
+  post_tasks:
+    - name: Create table
+      ansible.builtin.command: >
+        clickhouse-client -q 'CREATE TABLE {{ clickhouse_db }}.{{ clickhouse_table }} (
+          timestamp DateTime64(3),
+          host String,
+          appname String,
+          procid String,
+          facility String,
+          severity String,
+          message String
+        ) ENGINE = MergeTree() ORDER BY timestamp;'
+      register: create_table
+      failed_when: create_table.rc != 0 and create_table.rc != 57
+      changed_when: create_table.rc == 0  
+
+  # tasks:
+  #   - name: Get clickhouse distrib
+  #     ansible.builtin.get_url:
+  #       url: "https://packages.clickhouse.com/deb/pool/main/c/{{ item }}/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+  #       dest: "/tmp/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+  #       mode: "0644"
+  #     loop: "{{ clickhouse_packages }}"
+
+  #   - name: Install clickhouse packages
+  #     become: true
+  #     ansible.builtin.apt:
+  #       deb: "/tmp/{{ item }}_{{ clickhouse_version }}_amd64.deb"
+  #       state: present
+  #     loop: "{{ clickhouse_packages }}"
+
+  #   - name: Configure clickhouse
+  #     become: true
+  #     ansible.builtin.template:
+  #       src: templates/clickhouse.xml.j2
+  #       dest: /etc/clickhouse-server/config.d/cors.xml
+  #       owner: clickhouse
+  #       group: clickhouse
+  #       mode: "0640"
+  #     notify: Start clickhouse service
+
+  #   - name: Flush handlers
+  #     ansible.builtin.meta: flush_handlers
+
+  #   - name: Create database
+  #     ansible.builtin.command: "clickhouse-client -q 'create database {{ clickhouse_db }};'"
+  #     register: create_db
+  #     failed_when: create_db.rc != 0 and create_db.rc != 82
+  #     changed_when: create_db.rc == 0
+
+  #   - name: Create table
+  #     ansible.builtin.command: >
+  #       clickhouse-client -q 'CREATE TABLE {{ clickhouse_db }}.{{ clickhouse_table }} (
+  #         timestamp DateTime64(3),
+  #         host String,
+  #         appname String,
+  #         procid String,
+  #         facility String,
+  #         severity String,
+  #         message String
+  #       ) ENGINE = MergeTree() ORDER BY timestamp;'
+  #     register: create_table
+  #     failed_when: create_table.rc != 0 and create_table.rc != 57
+  #     changed_when: create_table.rc == 0
+
+- name: Install Vector
+  hosts: vector
+  gather_facts: false
+
+  # handlers:
+  #   - name: Start vector service
+  #     become: true
+  #     ansible.builtin.service:
+  #       name: vector
+  #       state: restarted
+
+  pre_tasks:
+    - name: Install Python
+      become: true
+      ansible.builtin.raw: apt-get update && apt-get install -y python3
+      changed_when: false
+
+  roles:
+    - role: vector
+      vars:
+        vector_version: "{{ vector_version }}"
+        clickhouse_host_ip: "{{ clickhouse_host_ip }}"
+        clickhouse_db: "{{ clickhouse_db }}"
+        clickhouse_table: "{{ clickhouse_table }}"
+
+  # tasks:
+    # - name: Get vector distrib
+    #   become: true
+    #   ansible.builtin.get_url:
+    #     url: "https://install.datadoghq.com/vector/{{ vector_version }}/vector_{{ vector_version }}-1_amd64.deb"
+    #     dest: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+    #     mode: "0644"
+
+    # - name: Install vector packages
+    #   become: true
+    #   ansible.builtin.apt:
+    #     deb: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+    #     state: present
+    #   notify: Start vector service
+
+    # - name: Deploy vector configuration
+    #   become: true
+    #   ansible.builtin.template:
+    #     src: templates/vector.yaml.j2
+    #     dest: /etc/vector/vector.yaml
+    #     mode: "0644"
+    #   notify: Start vector service
+
+    # - name: Flush handlers
+    #   ansible.builtin.meta: flush_handlers
+
+- name: Install lighthouse
+  hosts: lighthouse
+  gather_facts: false
+
+  # handlers:
+    # - name: Start nginx service
+    #   become: true
+    #   ansible.builtin.service:
+    #     name: nginx
+    #     state: restarted
+
+  pre_tasks:
+    - name: Install Python
+      become: true
+      ansible.builtin.raw: apt-get update && apt-get install -y python3
+      changed_when: false
+
+    - name: Install Nginx
+      become: true
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+roles:
+    - role: lighthouse
+
+  # tasks:
+    # - name: Get lighthouse files
+    #   become: true
+    #   ansible.builtin.file:
+    #     path: /var/www/lighthouse
+    #     state: directory
+    #     owner: www-data
+    #     group: www-data
+    #     mode: '0755'
+
+    # - name: Copy files Lighthouse
+    #   become: true
+    #   ansible.builtin.copy:
+    #     src: "{{ lighthouse_configs_dir }}"
+    #     dest: /var/www/lighthouse/
+    #     owner: www-data
+    #     group: www-data
+    #     directory_mode: '0755'
+    #     mode: '0644'
+
+    # - name: Configure nginx for lighthouse
+    #   become: true
+    #   ansible.builtin.template:
+    #     src: "{{ lighthouse_nginx_conf_template }}"
+    #     dest: /etc/nginx/conf.d/lighthouse.conf
+    #     owner: root
+    #     group: root
+    #     mode: "0644"
+    #   notify: Start nginx service
