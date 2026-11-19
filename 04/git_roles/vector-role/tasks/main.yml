@@ -1,0 +1,27 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for vector-role
+- name: Get vector distrib
+  become: true
+  ansible.builtin.get_url:
+    url: "https://install.datadoghq.com/vector/{{ vector_version }}/vector_{{ vector_version }}-1_amd64.deb"
+    dest: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+    mode: "0644"
+
+- name: Install vector packages
+  become: true
+  ansible.builtin.apt:
+    deb: "/tmp/vector_{{ vector_version }}-1_amd64.deb"
+    state: present
+  notify: Start vector service
+
+- name: Deploy vector configuration
+  become: true
+  ansible.builtin.template:
+    src: templates/vector.yaml.j2
+    dest: /etc/vector/vector.yaml
+    mode: "0644"
+  notify: Start vector service
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

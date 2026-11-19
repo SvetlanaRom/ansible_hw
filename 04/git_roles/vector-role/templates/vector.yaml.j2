@@ -1,0 +1,18 @@
+sources:
+  my_source_id:
+    type: demo_logs
+    format: syslog
+    interval: 1
+
+sinks:
+  clickhouse_sink:
+    type: clickhouse
+    inputs:
+      - my_source_id
+    endpoint: "http://{{ clickhouse_host_ip }}:{{ clickhouse_port }}"
+    database: "{{ clickhouse_db }}"
+    table: "{{ clickhouse_table }}"
+    compression: gzip
+    encoding:
+      timestamp_format: unix
+    skip_unknown_fields: true

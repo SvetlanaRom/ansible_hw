@@ -1,0 +1,8 @@
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for vector-role
+vector_version: "0.61.0"
+clickhouse_host_ip: "62.84.116.172"
+clickhouse_port: 8123
+clickhouse_db: "logs"
+clickhouse_table: "demo_syslog"
