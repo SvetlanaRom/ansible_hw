@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: MIT-0
+---
+# vars file for lighthouse-role
+lighthouse_configs_dir: "templates/lighthouse/"
+lighthouse_nginx_conf_template: "templates/nginx_lighthouse.conf.j2"

@@ -5,9 +5,9 @@
     name: clickhouse
   - src: https://github.com/SvetlanaRom/vector-role.git
     scm: git
-    version: "1.0.0"
-    name: vector-role
+    version: "1.0.3"
+    name: vector
   - src: https://github.com/SvetlanaRom/lighthouse-role.git
     scm: git
-    version: "1.0.0"
-    name: lighthouse-role
+    version: "1.0.3"
+    name: lighthouse
