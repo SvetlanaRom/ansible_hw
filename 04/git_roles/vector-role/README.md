@@ -1,38 +1,41 @@
-Role Name
+Vector
 =========
 
-A brief description of the role goes here.
+Role автоматизирует установку и настройку **Vector**.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Предустановка Python3 на целевые хосты
+- Целевые хосты с ОС **Ubuntu** и доступом по SSH с правами `sudo`.
+- В playbook должна быть указана установка Clickhouse до установки Vector.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Все переменные, которые можно переопределить, хранятся в файле defaults/main.yml, а также в таблице ниже.
+
+| Переменная | По умолчанию | Описание |
+| --- | --- | --- |
+| `vector_version` | `"0.61.0"` | Версия пакета Vector для установки |
+| `clickhouse_host_ip` | `"127.0.0.1"` | IP-адрес сервера ClickHouse |
+| `clickhouse_port` | `8123` | HTTP-порт подключения к ClickHouse |
+| `clickhouse_db` | `"logs"` | Имя базы данных в ClickHouse |
+| `clickhouse_table` | `"demo_syslog"` | Имя таблицы в ClickHouse |
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Нет зависимостей
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  roles:
+    - role: vector
 
 License
 -------
 
-BSD
+MIT
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

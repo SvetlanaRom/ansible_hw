@@ -1,7 +1,7 @@
 ---
 - name: Install Clickhouse
   hosts: clickhouse
-  gather_facts: false
+  # gather_facts: false
 
   # handlers:
   #   - name: Start clickhouse service
@@ -19,12 +19,12 @@
   roles:
     - role: clickhouse
       vars:
-        clickhouse_version: "{{ clickhouse_version }}"
         clickhouse_http_port: "{{ clickhouse_port }}"
-        clickhouse_dbs_custom: "{ name: {{ clickhouse_db }} }"
+        clickhouse_dbs_custom: 
+          - name: "{{ clickhouse_db }}"
       tags:
         - install
-        - configure
+        - config
 
   post_tasks:
     - name: Create table
@@ -40,7 +40,7 @@
         ) ENGINE = MergeTree() ORDER BY timestamp;'
       register: create_table
       failed_when: create_table.rc != 0 and create_table.rc != 57
-      changed_when: create_table.rc == 0  
+      changed_when: create_table.rc == 0
 
   # tasks:
   #   - name: Get clickhouse distrib
@@ -110,11 +110,6 @@
 
   roles:
     - role: vector
-      vars:
-        vector_version: "{{ vector_version }}"
-        clickhouse_host_ip: "{{ clickhouse_host_ip }}"
-        clickhouse_db: "{{ clickhouse_db }}"
-        clickhouse_table: "{{ clickhouse_table }}"
 
   # tasks:
     # - name: Get vector distrib
@@ -165,7 +160,7 @@
         name: nginx
         state: present
 
-roles:
+  roles:
     - role: lighthouse
 
   # tasks:
